@@ -32,7 +32,7 @@ export function TranscriptViewer({
     || (variants?.faq ? (() => { try { return JSON.parse(variants.faq.content) } catch { return [] } })() : [])
 
   return (
-    <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
+    <Tabs value={activeTab} onValueChange={(val) => onTabChange(val as 'raw' | 'cleaned' | 'summary' | 'faq')} className="w-full">
       <TabsList className="mb-4">
         <TabsTrigger value="raw">Raw</TabsTrigger>
         {hasCleaned && <TabsTrigger value="cleaned">Cleaned</TabsTrigger>}

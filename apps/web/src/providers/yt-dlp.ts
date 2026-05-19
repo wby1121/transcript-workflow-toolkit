@@ -7,12 +7,13 @@ import { join } from 'path'
 const execFileAsync = promisify(execFile)
 
 async function findYtDlp(): Promise<{ cmd: string; args: string[] }> {
-  for (const [cmd, testArgs] of [
+  const candidates: Array<[string, string[]]> = [
     ['yt-dlp', ['--version']],
     ['yt-dlp.exe', ['--version']],
     ['python', ['-m', 'yt_dlp', '--version']],
     ['python3', ['-m', 'yt_dlp', '--version']],
-  ]) {
+  ]
+  for (const [cmd, testArgs] of candidates) {
     try {
       await execFileAsync(cmd, testArgs, { timeout: 5000 })
       if (cmd === 'python' || cmd === 'python3') {
@@ -40,15 +41,23 @@ export class YtDlpProvider {
     }
   }
 
-  async fetch(videoId: string) {
+  async fetch(videoId: string): Promise<{
+    transcript: any[]
+    title: string
+    channelName?: string
+    thumbnailUrl?: string
+    durationSeconds?: number
+    language: string
+  }> {
     const { cmd, args } = await findYtDlp()
     const url = `https://www.youtube.com/watch?v=${videoId}`
     const subFile = join(tmpdir(), `ytt_sub_${videoId}`)
 
     try {
       // Step 1: Download subtitle to temp file using yt-dlp
-      const allArgs = [
-        ...args,
+      const baseArgs: string[] = Array.isArray(args) ? args.filter((a): a is string => typeof a === 'string') : []
+      const allArgs: string[] = [
+        ...baseArgs,
         '--write-auto-subs',
         '--sub-format', 'srt',
         '--sub-langs', 'en',

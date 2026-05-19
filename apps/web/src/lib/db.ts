@@ -131,7 +131,7 @@ function executeStatement(sql: string, params: unknown[]): { changes: number; la
       }
       enqueueWrite(() => saveStore())
     }
-    return { changes: 1, lastInsertRowid: s[table]?.length || 0 }
+    return { changes: 1, lastInsertRowid: (table && s[table]) ? s[table].length : 0 }
   }
 
   if (upper.startsWith('UPDATE')) {

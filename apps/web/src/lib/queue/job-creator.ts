@@ -1,5 +1,5 @@
 import { getDb } from '@/lib/db'
-import { v4 as uuidv4 } from 'uuid' // NOTE: will use crypto.randomUUID() instead
+// uuid removed — using crypto.randomUUID()
 import type { Job } from '@/types'
 
 function generateId(): string {

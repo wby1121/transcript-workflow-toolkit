@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Background rounded square -->
+  <rect width="64" height="64" rx="14" fill="#2563eb"/>
+
+  <!-- Document shape with transcript lines -->
+  <rect x="12" y="8" width="40" height="48" rx="4" fill="white" opacity="0.95"/>
+
+  <!-- Timestamp column -->
+  <rect x="16" y="20" width="10" height="3" rx="1.5" fill="#94a3b8"/>
+  <rect x="16" y="27" width="10" height="3" rx="1.5" fill="#94a3b8"/>
+  <rect x="16" y="34" width="10" height="3" rx="1.5" fill="#94a3b8"/>
+  <rect x="16" y="41" width="10" height="3" rx="1.5" fill="#94a3b8"/>
+  <rect x="16" y="48" width="10" height="3" rx="1.5" fill="#94a3b8"/>
+
+  <!-- Text lines -->
+  <rect x="29" y="20" width="18" height="3" rx="1.5" fill="#1e293b"/>
+  <rect x="29" y="27" width="21" height="3" rx="1.5" fill="#1e293b"/>
+  <rect x="29" y="34" width="15" height="3" rx="1.5" fill="#1e293b"/>
+  <rect x="29" y="41" width="19" height="3" rx="1.5" fill="#1e293b"/>
+  <rect x="29" y="48" width="16" height="3" rx="1.5" fill="#1e293b"/>
+
+  <!-- Small sparkle / AI indicator -->
+  <circle cx="50" cy="15" r="6" fill="#fbbf24"/>
+  <path d="M50 11v8M46 15h8" stroke="#1e293b" stroke-width="1.2" stroke-linecap="round"/>
+</svg>

@@ -12,6 +12,7 @@ function rowToTranscript(row: Record<string, unknown>): TranscriptResult {
     transcript: JSON.parse(row.transcript_json as string),
     language: row.language as string,
     provider: row.provider as string,
+    fetchedAt: row.fetched_at as string | undefined,
   }
 }
 

@@ -16,6 +16,7 @@ export interface TranscriptResult {
   transcript: TranscriptSegment[]
   language: string
   provider: string           // 'youtube_api' | 'yt_dlp'
+  fetchedAt?: string         // ISO timestamp from cache
 }
 
 // ---- Variants ----

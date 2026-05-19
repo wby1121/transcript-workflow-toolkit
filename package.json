@@ -1,0 +1,19 @@
+{
+  "name": "transcript-workflow-toolkit",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "start": "turbo start",
+    "lint": "turbo lint",
+    "clean": "turbo clean && rm -rf node_modules apps/*/node_modules",
+    "docker:build": "docker build -t transcript-toolkit .",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "typescript": "^5.5.0"
+  },
+  "packageManager": "pnpm@11.1.2"
+}

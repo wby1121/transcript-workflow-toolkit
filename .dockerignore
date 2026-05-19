@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+.github
+*.md
+!.env.example
+.env.local
+.env*.local
+data
+.turbo
+dist
+coverage
+.tmp
+README.md
+docs

@@ -12,7 +12,7 @@ interface TranscriptViewerProps {
   variants: Record<string, TranscriptVariant> | null
   seo: SeoContent | null
   activeTab: string
-  onTabChange: (tab: string) => void
+  onTabChange: (tab: 'raw' | 'cleaned' | 'summary' | 'faq') => void
   aiLoading: boolean
   hasAiContent: boolean
   onGenerateAi: () => void

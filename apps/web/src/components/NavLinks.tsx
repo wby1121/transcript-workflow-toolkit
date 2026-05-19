@@ -28,7 +28,7 @@ export function NavLinks() {
         </Link>
       ))}
       <a
-        href="https://github.com/YOUR_USERNAME/transcript-workflow-toolkit"
+        href="https://github.com/wby1121/transcript-workflow-toolkit"
         target="_blank"
         rel="noopener noreferrer"
         className="ml-2 px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"

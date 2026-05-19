@@ -2,7 +2,11 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight, Youtube, FileText, Sparkles, Globe } from 'lucide-react'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+function ensureProtocol(url: string): string {
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  return 'https://' + url
+}
+const BASE_URL = ensureProtocol(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000')
 
 export const metadata: Metadata = {
   title: 'Video to Markdown — Convert YouTube Videos to Markdown',

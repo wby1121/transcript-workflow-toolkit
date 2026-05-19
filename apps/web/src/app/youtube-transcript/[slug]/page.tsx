@@ -3,7 +3,11 @@ import { getCachedTranscript, getCachedVariants } from '@/lib/cache'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+function ensureProtocol(url: string): string {
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  return 'https://' + url
+}
+const BASE_URL = ensureProtocol(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000')
 
 interface Props { params: { slug: string } }
 

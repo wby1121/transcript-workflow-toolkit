@@ -1,6 +1,10 @@
 import type { Metadata } from 'next'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+function ensureProtocol(url: string): string {
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  return 'https://' + url
+}
+const BASE_URL = ensureProtocol(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000')
 
 export const metadata: Metadata = {
   title: 'YouTube Transcript Tool — Extract Timestamped Transcripts',

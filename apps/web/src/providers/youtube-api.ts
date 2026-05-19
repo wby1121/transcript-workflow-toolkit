@@ -14,39 +14,42 @@ export class YouTubeApiProvider implements TranscriptProvider {
   }
 
   async fetch(videoId: string): Promise<ProviderResult> {
-    // Get video details via YouTube Data API v3
     const apiKey = this.apiKey
-    if (!apiKey) {
-      throw new Error('YouTube API key not configured')
-    }
 
     // Step 1: Get video metadata
-    const videoUrl = new URL('https://www.googleapis.com/youtube/v3/videos')
-    videoUrl.searchParams.set('part', 'snippet,contentDetails')
-    videoUrl.searchParams.set('id', videoId)
-    videoUrl.searchParams.set('key', apiKey)
+    let title = 'YouTube Video'
+    let channelName: string | undefined
+    let thumbnailUrl: string | undefined
+    let durationSeconds: number | undefined
 
-    const videoRes = await fetch(videoUrl.toString())
-    if (!videoRes.ok) {
-      const body = await videoRes.text()
-      throw new Error(`YouTube API error (${videoRes.status}): ${body.substring(0, 200)}`)
+    if (apiKey) {
+      try {
+        const videoUrl = new URL('https://www.googleapis.com/youtube/v3/videos')
+        videoUrl.searchParams.set('part', 'snippet,contentDetails')
+        videoUrl.searchParams.set('id', videoId)
+        videoUrl.searchParams.set('key', apiKey)
+
+        const videoRes = await fetch(videoUrl.toString(), { signal: AbortSignal.timeout(10000) })
+        if (videoRes.ok) {
+          const videoData = await videoRes.json()
+          const videoItem = videoData.items?.[0]
+          if (videoItem) {
+            title = videoItem.snippet.title
+            channelName = videoItem.snippet.channelTitle
+            thumbnailUrl = videoItem.snippet.thumbnails?.maxres?.url
+              || videoItem.snippet.thumbnails?.high?.url
+              || videoItem.snippet.thumbnails?.default?.url
+            durationSeconds = parseDuration(videoItem.contentDetails.duration)
+          }
+        }
+      } catch { /* metadata is nice-to-have, not critical */ }
+    } else {
+      // No API key — use fallback thumbnail
+      thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
     }
-    const videoData = await videoRes.json()
-    const videoItem = videoData.items?.[0]
-    if (!videoItem) {
-      throw new Error('Video not found')
-    }
 
-    const title = videoItem.snippet.title
-    const channelName = videoItem.snippet.channelTitle
-    const thumbnailUrl = videoItem.snippet.thumbnails?.maxres?.url
-      || videoItem.snippet.thumbnails?.high?.url
-      || videoItem.snippet.thumbnails?.default?.url
-    const durationSeconds = parseDuration(videoItem.contentDetails.duration)
-
-    // Step 2: Get transcript via public transcript API
-    // Use multiple fallback transcript sources
-    let transcript = await fetchTranscriptPublic(videoId)
+    // Step 2: Get transcript via YouTube timedtext API (no auth needed)
+    const transcript = await fetchTranscript(videoId)
     if (!transcript || transcript.length === 0) {
       throw new Error('No English transcript available for this video')
     }
@@ -62,42 +65,50 @@ export class YouTubeApiProvider implements TranscriptProvider {
   }
 }
 
-async function fetchTranscriptPublic(videoId: string): Promise<any[]> {
-  // Try public transcript API (no auth needed)
-  const sources = [
-    `https://youtubetranscript.com/?v=${videoId}`,
-    `https://youtubetranscript.com/?v=${videoId}&hl=en`,
+async function fetchTranscript(videoId: string): Promise<any[]> {
+  const { parseXmlTranscript } = await import('@/lib/transcript/parser')
+  const { formatTimestamp } = await import('@/lib/utils')
+
+  // YouTube's own timedtext API — the source of truth, no auth needed
+  const urls = [
+    `https://www.youtube.com/api/timedtext?v=${videoId}&lang=en`,
+    `https://www.youtube.com/api/timedtext?v=${videoId}&lang=en-US`,
+    `https://www.youtube.com/api/timedtext?v=${videoId}`,
   ]
 
-  for (const url of sources) {
+  for (const url of urls) {
     try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(10000) })
+      const res = await fetch(url, {
+        signal: AbortSignal.timeout(15000),
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; TranscriptToolkit/1.0)',
+        },
+      })
       if (!res.ok) continue
+
       const text = await res.text()
 
-      // Parse the response — it's XML format
-      const { parseXmlTranscript } = await import('@/lib/transcript/parser')
-
-      // The response has <text> elements
+      // YouTube timedtext returns XML with <text start="..." dur="...">...</text>
       if (text.includes('<text ')) {
         const transcript = parseXmlTranscript(text)
         if (transcript.length > 0) return transcript
       }
-
-      // Try parsing as JSON (some APIs return JSON)
-      try {
-        const json = JSON.parse(text)
-        if (Array.isArray(json)) {
-          const { formatTimestamp } = await import('@/lib/utils')
-          return json.map((item: any) => ({
-            tsSeconds: Math.floor(item.offset / 1000 || item.start || 0),
-            tsDisplay: formatTimestamp(Math.floor(item.offset / 1000 || item.start || 0)),
-            text: (item.text || '').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').trim(),
-          })).filter((item: any) => item.text.length > 0)
-        }
-      } catch { /* not JSON, continue */ }
-    } catch { /* try next source */ }
+    } catch { /* try next URL */ }
   }
+
+  // Fallback: public transcript API
+  try {
+    const res = await fetch(`https://youtubetranscript.com/?v=${videoId}`, {
+      signal: AbortSignal.timeout(10000),
+    })
+    if (res.ok) {
+      const text = await res.text()
+      if (text.includes('<text ')) {
+        const transcript = parseXmlTranscript(text)
+        if (transcript.length > 0) return transcript
+      }
+    }
+  } catch { /* last resort failed */ }
 
   return []
 }
